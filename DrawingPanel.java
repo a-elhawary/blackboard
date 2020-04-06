@@ -49,7 +49,8 @@ public class DrawingPanel extends JPanel{
         // renders the stroke detected by the listener
         if(listener.isDrawing()){
             g.setColor(foreground);
-            lastIndexDrawn = listener.getCurrentStroke().renderStroke(g,lastIndexDrawn, brushSize);
+            listener.getCurrentStroke().setBrushSize(brushSize);
+            lastIndexDrawn = listener.getCurrentStroke().renderStroke(g,lastIndexDrawn);
         }
 
         if(listener.isStrokeSavable()){
@@ -65,8 +66,8 @@ public class DrawingPanel extends JPanel{
                 g.setColor(background);
                 Stroke erasingStroke = history.pop();
                 undoneHistory.push(erasingStroke);
-                lastIndexErased = erasingStroke.renderStroke(g, lastIndexErased, brushSize);
-                if(erasingStroke.getNumberOfNodes() >= lastIndexErased){
+                lastIndexErased = erasingStroke.renderStroke(g, lastIndexErased);
+                if(erasingStroke.isDone(lastIndexErased)){
                     isUndoCalled = false;
                     lastIndexErased = 0;
                 }
@@ -80,8 +81,8 @@ public class DrawingPanel extends JPanel{
                 g.setColor(foreground);
                 Stroke reDrawing = undoneHistory.pop();
                 history.push(reDrawing);
-                reDrawing.renderStroke(g, lastIndexReDrawn, brushSize);
-                if(reDrawing.getNumberOfNodes() >= lastIndexErased){
+                reDrawing.renderStroke(g, lastIndexReDrawn);
+                if(reDrawing.isDone(lastIndexReDrawn)){
                     isRedoCalled = false;
                     lastIndexReDrawn = 0;
                 }
@@ -111,6 +112,14 @@ public class DrawingPanel extends JPanel{
         height = getHeight();
         g.setColor(background);
         g.fillRect(0 , 0, width, height);
+    }
+
+    public void incrementBrushSize(){
+        brushSize++;
+    }
+
+    public void decrementBrushSize(){
+        brushSize--;
     }
 
     private class MyListener extends MouseInputAdapter{

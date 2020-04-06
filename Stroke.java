@@ -3,6 +3,7 @@ import java.awt.Graphics;
 
 public class Stroke{
     private ArrayList<Node> stroke;
+    private int brushSize;
 
     public Stroke(){
         stroke = new ArrayList<Node>();
@@ -24,13 +25,21 @@ public class Stroke{
         return stroke.get(index).y;
     }
 
-    public int renderStroke(Graphics g, int lastNode, int brushSize){
+    public int renderStroke(Graphics g, int lastNode){
         int i = lastNode;
         while(i < getNumberOfNodes()){
             g.fillOval(getNodeX(i), getNodeY(i), brushSize, brushSize);
             i++;
         }
         return i;
+    }
+
+    public boolean isDone(int lastIndexRendered){
+        return getNumberOfNodes() >= lastIndexRendered;
+    }
+
+    public void setBrushSize(int brushSize){
+        this.brushSize = brushSize;
     }
 
     private class Node{

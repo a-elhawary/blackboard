@@ -9,6 +9,8 @@ public class Frame extends JFrame{
     final int C = 67;
     final int R = 82;
     final int Z = 90;
+    final int minus = 45;
+    final int plus = 61;
     int width = 1200;
     int height = 800;
 
@@ -37,6 +39,12 @@ public class Frame extends JFrame{
                     break;
                 case Z:
                     panel.setUndo();
+                    break;
+                case minus:
+                    panel.decrementBrushSize();
+                    break;
+                case plus:
+                    panel.incrementBrushSize();
                     break;
             }
         }
