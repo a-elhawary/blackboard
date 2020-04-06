@@ -9,8 +9,12 @@ public class Frame extends JFrame{
     final int C = 67;
     final int R = 82;
     final int Z = 90;
+    int width = 1200;
+    int height = 800;
 
     public Frame(){
+        setSize(width, height);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         panel = new DrawingPanel();
         add(panel);

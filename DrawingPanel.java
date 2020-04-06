@@ -91,6 +91,8 @@ public class DrawingPanel extends JPanel{
 
     public void setClear(){
         clearScreen = true;
+        history.clear();
+        undoneHistory.clear();
         repaint();
     }
 
