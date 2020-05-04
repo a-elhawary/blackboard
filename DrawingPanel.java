@@ -12,25 +12,20 @@ public class DrawingPanel extends JPanel{
 
     private int width;
     private int height;
-    private int brushSize = 10;
+    private int brushSize = 8;
     private boolean clearScreen;
     private boolean isUndoCalled;
     private boolean isRedoCalled;
-    private Stack<Stroke> history;
-    private Stack<Stroke> undoneHistory;
+    private Stack<Shape> history;
+    private Stack<Shape> undoneHistory;
 
     MyListener listener;
 
-    // variable that stores the last index of the stroke rendered to resume from correct poisition
-    private int lastIndexDrawn;
-    private int lastIndexErased;
-    private int lastIndexReDrawn;
-
     public DrawingPanel(){
-        background = Color.decode("#202020");
-        foreground = Color.decode("#FFFFFF");
-        history = new Stack<Stroke>();
-        undoneHistory = new Stack<Stroke>();
+        background = Colors.BLACK;
+        foreground = Colors.WHITE;
+        history = new Stack<Shape>();
+        undoneHistory = new Stack<Shape>();
 
         listener = new MyListener();
 
@@ -48,13 +43,12 @@ public class DrawingPanel extends JPanel{
         }
         // renders the stroke detected by the listener
         if(listener.isDrawing()){
-            g.setColor(foreground);
+            listener.getCurrentStroke().setColor(foreground);
             listener.getCurrentStroke().setBrushSize(brushSize);
-            lastIndexDrawn = listener.getCurrentStroke().renderStroke(g,lastIndexDrawn);
+            listener.getCurrentStroke().render(g);
         }
 
         if(listener.isStrokeSavable()){
-            lastIndexDrawn = 0;
             history.push(listener.getPastStroke());
         }
 
@@ -63,14 +57,15 @@ public class DrawingPanel extends JPanel{
             if(history.empty()){
                 isUndoCalled = false;
             }else{
-                g.setColor(background);
-                Stroke erasingStroke = history.pop();
-                undoneHistory.push(erasingStroke);
-                lastIndexErased = erasingStroke.renderStroke(g, lastIndexErased);
-                if(erasingStroke.isDone(lastIndexErased)){
-                    isUndoCalled = false;
-                    lastIndexErased = 0;
-                }
+				Shape erasingStroke = history.pop();
+        		undoneHistory.push(erasingStroke);
+				Color original = erasingStroke.getColor();
+        		erasingStroke.setColor(background);
+        		erasingStroke.render(g);
+				if(erasingStroke.isDone()){
+					erasingStroke.setColor(original);
+        			isUndoCalled = false;
+				}
             }
         }
 
@@ -78,18 +73,19 @@ public class DrawingPanel extends JPanel{
             if(undoneHistory.empty()){
                 isRedoCalled = false;
             }else{
-                g.setColor(foreground);
-                Stroke reDrawing = undoneHistory.pop();
-                history.push(reDrawing);
-                reDrawing.renderStroke(g, lastIndexReDrawn);
-                if(reDrawing.isDone(lastIndexReDrawn)){
-                    isRedoCalled = false;
-                    lastIndexReDrawn = 0;
-                }
+				Shape redrawingStroke = undoneHistory.pop();
+        		history.push(redrawingStroke);
+        		redrawingStroke.render(g);
+				if(redrawingStroke.isDone()){
+        			isRedoCalled = false;
+				}
             }
         }
     }
 
+	private void performUndo(Stack<Shape> outOf, Stack<Shape> into, boolean flag, Graphics g){
+		
+	}
     public void setClear(){
         clearScreen = true;
         history.clear();
@@ -105,6 +101,10 @@ public class DrawingPanel extends JPanel{
     public void setRedo(){
         isRedoCalled = true;
         repaint();
+    }
+
+    public void setColor(Color color){
+        foreground = color;
     }
 
     private void clear(Graphics g){
