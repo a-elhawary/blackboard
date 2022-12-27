@@ -7,9 +7,10 @@ public class Frame extends JFrame{
 
     DrawingPanel panel;
     
+    // ASCII characters
     final int C = 67;
     final int R = 82;
-	final int S = 83;
+    final int S = 83;
     final int Z = 90;
     final int minus = 45;
     final int plus = 61;
@@ -42,13 +43,13 @@ public class Frame extends JFrame{
         public void keyPressed(KeyEvent e){
             switch(e.getKeyCode()){
                 case C:
-                    panel.setClear();
+                    panel.clear();
                     break;
                 case R:
-                    panel.setRedo();
+                    panel.redo();
                     break;
                 case Z:
-                    panel.setUndo();
+                    panel.undo();
                     break;
                 case minus:
                     panel.decrementBrushSize();
@@ -77,10 +78,10 @@ public class Frame extends JFrame{
                 case seven:
                     panel.setColor(Colors.PINK);
                     break;
-				case S:
-					System.out.println("making square");
-				default:
-					System.out.println(e.getKeyCode());
+		case S:
+		    System.out.println("making square");
+		default:
+		    System.out.println(e.getKeyCode());
             }
         }
     }

@@ -27,7 +27,7 @@ public class DrawingPanel extends JPanel{
         history = new Stack<Shape>();
         undoneHistory = new Stack<Shape>();
 
-        listener = new MyListener();
+        listener = new MyListener(this);
 
         addMouseMotionListener(listener);
         addMouseListener(listener);
@@ -37,9 +37,11 @@ public class DrawingPanel extends JPanel{
 
     @Override
     public void paintComponent(Graphics g){
-        if(clearScreen){
-            clear(g);
-            clearScreen = false;
+        // clear the screan
+        clear(g);
+        // render everything in history
+        for(Shape shape:history){
+            shape.render(g);
         }
         // renders the stroke detected by the listener
         if(listener.isDrawing()){
@@ -47,59 +49,25 @@ public class DrawingPanel extends JPanel{
             listener.getCurrentStroke().setBrushSize(brushSize);
             listener.getCurrentStroke().render(g);
         }
-
-        if(listener.isStrokeSavable()){
-            history.push(listener.getPastStroke());
-        }
-
-        // draws the newest stroke with the background color
-        if(isUndoCalled){
-            if(history.empty()){
-                isUndoCalled = false;
-            }else{
-				Shape erasingStroke = history.pop();
-        		undoneHistory.push(erasingStroke);
-				Color original = erasingStroke.getColor();
-        		erasingStroke.setColor(background);
-        		erasingStroke.render(g);
-				if(erasingStroke.isDone()){
-					erasingStroke.setColor(original);
-        			isUndoCalled = false;
-				}
-            }
-        }
-
-        if(isRedoCalled){
-            if(undoneHistory.empty()){
-                isRedoCalled = false;
-            }else{
-				Shape redrawingStroke = undoneHistory.pop();
-        		history.push(redrawingStroke);
-        		redrawingStroke.render(g);
-				if(redrawingStroke.isDone()){
-        			isRedoCalled = false;
-				}
-            }
-        }
     }
 
-	private void performUndo(Stack<Shape> outOf, Stack<Shape> into, boolean flag, Graphics g){
-		
-	}
-    public void setClear(){
-        clearScreen = true;
+    public void addShape(Shape shape){
+        history.add(shape);
+    }
+
+    public void clear(){
         history.clear();
         undoneHistory.clear();
         repaint();
     }
 
-    public void setUndo(){
-        isUndoCalled = true;
+    public void undo(){
+        undoneHistory.push(history.pop());
         repaint();
     }
 
-    public void setRedo(){
-        isRedoCalled = true;
+    public void redo(){
+        history.push(undoneHistory.pop());
         repaint();
     }
 
@@ -119,7 +87,8 @@ public class DrawingPanel extends JPanel{
     }
 
     public void decrementBrushSize(){
-        brushSize--;
+        if(brushSize != 1)
+            brushSize--;
     }
 
     private class MyListener extends MouseInputAdapter{
@@ -128,7 +97,12 @@ public class DrawingPanel extends JPanel{
 
         private Stroke currentStroke;
         private Stroke pastStroke;
+        private DrawingPanel panel;
 
+        public MyListener(DrawingPanel panel){
+            super();
+            this.panel = panel;
+        }
 
         public boolean isDrawing(){
             return isDrawing;
@@ -151,18 +125,20 @@ public class DrawingPanel extends JPanel{
             isDrawing = true;
             currentStroke = new Stroke();
             currentStroke.addNode(e.getX(), e.getY());
-            repaint();
+            panel.revalidate();
+            panel.repaint();
         }
 
         public void mouseDragged(MouseEvent e){
             currentStroke.addNode(e.getX(), e.getY());
-            repaint();
+            panel.revalidate();
+            panel.repaint();
         }
 
         public void mouseReleased(MouseEvent e){
             isDrawing = false;
-            pastStroke = currentStroke;
-            isStrokeSavable = true;
+            panel.addShape(currentStroke);
+            currentStroke = null;
         }
     }
 }
