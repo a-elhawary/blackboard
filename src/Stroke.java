@@ -51,7 +51,7 @@ public class Stroke implements Shape{
 
     public void render(Graphics g){
         int i = 0;
-        g.setColor(color);
+        g.setColor(this.color);
         while(i < getNumberOfNodes()){
             g.fillOval(getNodeX(i), getNodeY(i), brushSize, brushSize);
             i++;

@@ -53,15 +53,6 @@ public class DrawingPanel extends JPanel{
         for(Shape shape:history){
             shape.render(g);
         }
-        // renders the stroke detected by the listener
-        if(listener.isDrawing()){
-            listener.getCurrentShape().setColor(foreground);
-            listener.getCurrentShape().render(g);
-            if(listener.getCurrentShape() instanceof Stroke){
-                Stroke currStroke = (Stroke)(listener.getCurrentShape());
-                currStroke.setBrushSize(brushSize);
-            }
-        }
     }
 
     public void addShape(Shape shape){
@@ -92,6 +83,10 @@ public class DrawingPanel extends JPanel{
         foreground = color;
     }
 
+    public Color getColor(){
+        return foreground;
+    }
+
     private void clear(Graphics g){
         width = getWidth();
         height = getHeight();
@@ -108,9 +103,13 @@ public class DrawingPanel extends JPanel{
             brushSize--;
     }
 
-    private class MyListener extends MouseInputAdapter{
-        private boolean isDrawing = false;
+    public int getBrushSize(){
+        return this.brushSize;
+    }
 
+
+    private class MyListener extends MouseInputAdapter{
+        
         private Shape currentShape;
         private DrawingPanel panel;
 
@@ -123,24 +122,20 @@ public class DrawingPanel extends JPanel{
             return currentShape;
         }
 
-        public boolean isDrawing(){
-            return isDrawing;
-        }
-
         public void mousePressed(MouseEvent e){
-            isDrawing = true;
             switch(panel.getMode()){
                 case STROKE:
                     currentShape = new Stroke();
                     Stroke currStroke = (Stroke)(currentShape);
+                    currStroke.setBrushSize(panel.getBrushSize());
                     currStroke.addNode(e.getX(), e.getY());
                     break;
                 case RECT:
-                    System.out.println("making rect...");
                     currentShape = new Rectangle(e.getX(), e.getY());
-                    panel.addShape(currentShape);
                     break;
             }
+            currentShape.setColor(panel.getColor());
+            panel.addShape(currentShape);
             panel.revalidate();
             panel.repaint();
         }
@@ -159,9 +154,9 @@ public class DrawingPanel extends JPanel{
             panel.revalidate();
             panel.repaint();
         }
+
         public void mouseReleased(MouseEvent e){
-            isDrawing = false;
-            panel.addShape(currentShape);
+            panel.setMode(DrawingMode.STROKE);
             currentShape = null;
         }
     }
