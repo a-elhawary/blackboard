@@ -18,10 +18,12 @@ public class DrawingPanel extends JPanel{
     private boolean isRedoCalled;
     private Stack<Shape> history;
     private Stack<Shape> undoneHistory;
+    private DrawingMode mode;
 
     MyListener listener;
 
     public DrawingPanel(){
+        this.mode = DrawingMode.STROKE;
         background = Colors.BLACK;
         foreground = Colors.WHITE;
         history = new Stack<Shape>();
@@ -35,6 +37,14 @@ public class DrawingPanel extends JPanel{
         clearScreen = true;
     }
 
+    public void setMode(DrawingMode mode){
+        this.mode = mode;
+    }
+
+    public DrawingMode getMode(){
+        return this.mode;
+    }
+
     @Override
     public void paintComponent(Graphics g){
         // clear the screan
@@ -45,9 +55,12 @@ public class DrawingPanel extends JPanel{
         }
         // renders the stroke detected by the listener
         if(listener.isDrawing()){
-            listener.getCurrentStroke().setColor(foreground);
-            listener.getCurrentStroke().setBrushSize(brushSize);
-            listener.getCurrentStroke().render(g);
+            listener.getCurrentShape().setColor(foreground);
+            listener.getCurrentShape().render(g);
+            if(listener.getCurrentShape() instanceof Stroke){
+                Stroke currStroke = (Stroke)(listener.getCurrentShape());
+                currStroke.setBrushSize(brushSize);
+            }
         }
     }
 
@@ -69,6 +82,10 @@ public class DrawingPanel extends JPanel{
     public void redo(){
         history.push(undoneHistory.pop());
         repaint();
+    }
+
+    public void removeShape(){
+        history.pop();
     }
 
     public void setColor(Color color){
@@ -93,10 +110,8 @@ public class DrawingPanel extends JPanel{
 
     private class MyListener extends MouseInputAdapter{
         private boolean isDrawing = false;
-        private boolean isStrokeSavable = false;
 
-        private Stroke currentStroke;
-        private Stroke pastStroke;
+        private Shape currentShape;
         private DrawingPanel panel;
 
         public MyListener(DrawingPanel panel){
@@ -104,41 +119,50 @@ public class DrawingPanel extends JPanel{
             this.panel = panel;
         }
 
+        public Shape getCurrentShape(){
+            return currentShape;
+        }
+
         public boolean isDrawing(){
             return isDrawing;
         }
 
-        public boolean isStrokeSavable(){
-            return isStrokeSavable;
-        }
-
-        public Stroke getCurrentStroke(){
-            return currentStroke;
-        }
-
-        public Stroke getPastStroke(){
-            isStrokeSavable = false;
-            return pastStroke;
-        }
-        
         public void mousePressed(MouseEvent e){
             isDrawing = true;
-            currentStroke = new Stroke();
-            currentStroke.addNode(e.getX(), e.getY());
+            switch(panel.getMode()){
+                case STROKE:
+                    currentShape = new Stroke();
+                    Stroke currStroke = (Stroke)(currentShape);
+                    currStroke.addNode(e.getX(), e.getY());
+                    break;
+                case RECT:
+                    System.out.println("making rect...");
+                    currentShape = new Rectangle(e.getX(), e.getY());
+                    panel.addShape(currentShape);
+                    break;
+            }
             panel.revalidate();
             panel.repaint();
         }
 
         public void mouseDragged(MouseEvent e){
-            currentStroke.addNode(e.getX(), e.getY());
+            switch(panel.getMode()){
+                case STROKE:
+                    Stroke currStroke = (Stroke)(currentShape);
+                    currStroke.addNode(e.getX(), e.getY());
+                    break;
+                case RECT:
+                    Rectangle currRect = (Rectangle)(currentShape);
+                    currRect.setEnd(e.getX(), e.getY());
+                    break;
+            }
             panel.revalidate();
             panel.repaint();
         }
-
         public void mouseReleased(MouseEvent e){
             isDrawing = false;
-            panel.addShape(currentStroke);
-            currentStroke = null;
+            panel.addShape(currentShape);
+            currentShape = null;
         }
     }
 }

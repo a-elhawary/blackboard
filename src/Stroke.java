@@ -7,7 +7,7 @@ public class Stroke implements Shape{
     private int brushSize;
     private Color color;
     private final int SMOOTHING_CONSTANT = 5;
-	private int lastIndex = 0;
+    private int lastIndex = 0;
 
     public Stroke(){
         stroke = new ArrayList<Node>();
@@ -57,10 +57,6 @@ public class Stroke implements Shape{
             i++;
         }
         lastIndex = i;
-    }
-
-    public boolean isDone(){
-        return getNumberOfNodes() >= lastIndex;
     }
 
     public void setBrushSize(int brushSize){

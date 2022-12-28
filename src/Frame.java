@@ -79,7 +79,8 @@ public class Frame extends JFrame{
                     panel.setColor(Colors.PINK);
                     break;
 		case S:
-		    System.out.println("making square");
+                    panel.setMode(DrawingMode.RECT);
+                    break;
 		default:
 		    System.out.println(e.getKeyCode());
             }
